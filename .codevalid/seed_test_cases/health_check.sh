@@ -7,3 +7,4 @@ if [ "$code" = "200" ]; then
 else
   echo "health failed: HTTP $code"; exit 1
 fi
+exec "$@"
