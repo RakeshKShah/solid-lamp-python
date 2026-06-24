@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+set -eu
+BASE_URL="${BASE_URL:-http://app:6713}"
+CASE_SUFFIX="$(date +%s)-$$"
+TASK_RESP="/tmp/assign_task_event_not_found_task_${CASE_SUFFIX}.json"
+RESP_FILE="/tmp/assign_task_event_not_found_resp_${CASE_SUFFIX}.json"
+STATUS_FILE="/tmp/assign_task_event_not_found_status_${CASE_SUFFIX}.txt"
+TASK_ID=""
+cleanup_files() {
+  rm -f "$TASK_RESP" "$RESP_FILE" "$STATUS_FILE"
+}
+cleanup_resources() {
+  if [ -n "$TASK_ID" ]; then
+    curl -sS -X DELETE "$BASE_URL/tasks/$TASK_ID" >/dev/null || true
+  fi
+}
+trap 'cleanup_resources; cleanup_files' EXIT
+
+# Given
+CREATE_TASK_STATUS="$(curl -sS -o "$TASK_RESP" -w '%{http_code}' -X POST "$BASE_URL/tasks" -H 'Content-Type: application/json' --data '{"title":"Task with missing event '"$CASE_SUFFIX"'","description":"Event lookup failure test","status":"pending"}')"
+[ "$CREATE_TASK_STATUS" = "201" ]
+TASK_ID="$(jq -r '.id' "$TASK_RESP")"
+[ "$TASK_ID" != "null" ]
+MISSING_EVENT_ID="$((800000000 + $$))"
+
+# When
+curl -sS -o "$RESP_FILE" -w '%{http_code}' -X POST "$BASE_URL/tasks/$TASK_ID/assign" -H 'Content-Type: application/json' --data '{"event_id":'"$MISSING_EVENT_ID"'}' > "$STATUS_FILE"
+
+# Then
+STATUS="$(cat "$STATUS_FILE")"
+[ "$STATUS" = "404" ]
+jq -e '.error == "Event not found"' "$RESP_FILE" >/dev/null
+
+echo "CODEVALID_TEST_ASSERTION_OK:assign_task_event_not_found"
+
+# Cleanup
+:
