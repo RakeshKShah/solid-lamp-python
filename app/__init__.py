@@ -43,6 +43,11 @@ def create_app(config=None):
     app.register_blueprint(events_bp, url_prefix="/api/events")
     app.register_blueprint(tasks_bp, url_prefix="/api/tasks")
 
+    @app.route("/health")
+    def health():
+        from flask import jsonify as _jsonify
+        return _jsonify({"status": "ok"})
+
     with app.app_context():
         db.create_all()
 
