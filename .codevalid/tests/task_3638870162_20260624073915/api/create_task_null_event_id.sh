@@ -22,7 +22,7 @@ trap 'cleanup_db; cleanup_files' EXIT
 
 # When
 curl -sS -o "$RESPONSE_FILE" -w '%{http_code}' \
-  -X POST "$BASE_URL/tasks" \
+  -X POST "$BASE_URL/api/tasks" \
   -H 'Content-Type: application/json' \
   --data "{\"title\":\"${TASK_TITLE}\",\"event_id\":null}" > "$STATUS_FILE"
 
