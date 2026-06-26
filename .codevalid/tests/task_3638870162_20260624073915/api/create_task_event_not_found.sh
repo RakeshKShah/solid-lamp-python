@@ -12,7 +12,7 @@ trap 'rm -f "$RESPONSE_FILE" "$STATUS_FILE"' EXIT
 
 # When
 curl -sS -o "$RESPONSE_FILE" -w '%{http_code}' \
-  -X POST "$BASE_URL/tasks" \
+  -X POST "$BASE_URL/api/tasks" \
   -H 'Content-Type: application/json' \
   --data "{\"title\":\"Task with invalid event\",\"event_id\":${NONEXISTENT_EVENT_ID}}" > "$STATUS_FILE"
 
