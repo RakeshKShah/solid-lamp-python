@@ -11,20 +11,20 @@ cleanup_files() {
 }
 cleanup_resources() {
   if [ -n "$TASK_ID" ]; then
-    curl -sS -X DELETE "$BASE_URL/tasks/$TASK_ID" >/dev/null || true
+    curl -sS -X DELETE "$BASE_URL/api/tasks/$TASK_ID" >/dev/null || true
   fi
 }
 trap 'cleanup_resources; cleanup_files' EXIT
 
 # Given
-CREATE_TASK_STATUS="$(curl -sS -o "$TASK_RESP" -w '%{http_code}' -X POST "$BASE_URL/tasks" -H 'Content-Type: application/json' --data '{"title":"Task with missing event '"$CASE_SUFFIX"'","description":"Event lookup failure test","status":"pending"}')"
+CREATE_TASK_STATUS="$(curl -sS -o "$TASK_RESP" -w '%{http_code}' -X POST "$BASE_URL/api/tasks" -H 'Content-Type: application/json' --data '{"title":"Task with missing event '"$CASE_SUFFIX"'","description":"Event lookup failure test","status":"pending"}')"
 [ "$CREATE_TASK_STATUS" = "201" ]
 TASK_ID="$(jq -r '.id' "$TASK_RESP")"
 [ "$TASK_ID" != "null" ]
 MISSING_EVENT_ID="$((800000000 + $$))"
 
 # When
-curl -sS -o "$RESP_FILE" -w '%{http_code}' -X POST "$BASE_URL/tasks/$TASK_ID/assign" -H 'Content-Type: application/json' --data '{"event_id":'"$MISSING_EVENT_ID"'}' > "$STATUS_FILE"
+curl -sS -o "$RESP_FILE" -w '%{http_code}' -X POST "$BASE_URL/api/tasks/$TASK_ID/assign" -H 'Content-Type: application/json' --data '{"event_id":'"$MISSING_EVENT_ID"'}' > "$STATUS_FILE"
 
 # Then
 STATUS="$(cat "$STATUS_FILE")"
