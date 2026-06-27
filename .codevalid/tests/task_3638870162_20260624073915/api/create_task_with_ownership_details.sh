@@ -29,7 +29,7 @@ EVENT_ID="$(psql "$DATABASE_URL" -t -A -c "INSERT INTO events (name, description
 
 # When
 curl -sS -o "$RESPONSE_FILE" -w '%{http_code}' \
-  -X POST "$BASE_URL/tasks" \
+  -X POST "$BASE_URL/api/tasks" \
   -H 'Content-Type: application/json' \
   --data "{\"title\":\"${TASK_TITLE}\",\"event_id\":${EVENT_ID}}" > "$STATUS_FILE"
 
